@@ -1,0 +1,51 @@
+Metadata-Version: 2.1
+Name: django-magic-auth
+Version: 0.1
+Summary: A Django app to for smooth user onboardings.
+Home-page: https://www.example.com/
+Author: Vikas Vijay Gaikwad
+Author-email: vgaikwad299@gmail.com
+License: BSD-3-Clause  # Example license
+Classifier: Environment :: Web Environment
+Classifier: Framework :: Django
+Classifier: Framework :: Django :: 5.0
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Requires-Python: >=3.10
+License-File: LICENSE
+Requires-Dist: Django>=4.0
+
+============
+django-users
+============
+
+django-users is a Django app for smooth users onboarding.
+
+Detailed documentation is in the "docs" directory.
+
+Quick start
+-----------
+
+1. Add "users" to your INSTALLED_APPS setting like this::
+
+    INSTALLED_APPS = [
+        ...,
+        "django_users",
+    ]
+
+2. Include the users URLconf in your project urls.py like this::
+
+    path("users/", include("django_users.urls")),
+
+3. Run ``python manage.py migrate`` to create the models.
+
+4. Start the development server and visit the admin to create a maage users.
+
+5. Visit the ``/users/`` URL to participate in the users.
