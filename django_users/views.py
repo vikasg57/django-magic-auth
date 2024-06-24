@@ -1,12 +1,56 @@
 from rest_framework import status
-from base.response import APIResponse
+from django_users.response import APIResponse
+from rest_framework.exceptions import APIException
+import re
 
-from base.views import AbstractAPIView
-from users.handlers.friends_handler import FriendsHandler
-from users.handlers.user_handler import UserHandler
-from rest_framework.permissions import AllowAny
+from django.utils.html import strip_tags
+from django.core.validators import validate_email
 
-from users.permissions import IsRequestOwner
+from rest_framework.views import APIView
+from django_users.handlers.user_handler import UserHandler
+
+
+class AbstractAPIView(APIView):
+
+    def get_bool_query_value(self, param_str):
+        value = self.request.GET.get(param_str)
+        if value == 'false' or value == 'False' or not value:
+            return False
+        return True
+
+    def get_bool_value_from_string(self, value):
+        if value == 'false' or value == 'False' or not value:
+            return False
+        return True
+
+    def get_sanitized_string(self, data_string, is_param_str=False):
+        start_url_pattern = r'(?:http://\S+|https://\S+|www\.\S+)'
+        end_url_pattern = r'\S+(?:\.com|\.org|\.net|\.gov|\.edu|\.mil|\.int|\.uk|\.ca|\.au|\.in|\.de|\.jp|\.fr|\.it|' \
+                          r'\.es|\.nl|\.se|\.no|\.dk|\.br|\.ru|\.cn|\.kr|\.sg|\.hk|\.tw|\.io|\.me|\.info|\.biz|' \
+                          r'\.coop|\.museum|\.aero|\.name)'
+        match_symbol_pattern = r'[\{\}\[\]\(\)://<>]'
+        if is_param_str:
+            string = self.request.GET.get(data_string)
+        else:
+            string = self.request.data.get(data_string)
+        if string:
+            string = strip_tags(string)
+            string = re.sub(start_url_pattern, '', string)
+            string = re.sub(end_url_pattern, '', string)
+            string = re.sub(match_symbol_pattern, '', string)
+            string = string.strip()
+            return string
+
+    def get_email(self, email):
+        email = email.lower()
+        if email is not None:
+            try:
+                validate_email(email)
+            except Exception as e:
+                raise APIException(
+                    'Enter a valid email address.', 'validation_failed'
+                )
+        return email
 
 
 class AuthLogInView(AbstractAPIView):
@@ -32,53 +76,4 @@ class AuthSignUpView(AbstractAPIView):
         email = self.get_email(request.data.get("email"))
         data = UserHandler().crete_user(
             first_name, last_name, mobile, email, password)
-        return APIResponse(data=data, status=status.HTTP_200_OK)
-
-
-class AllUsersView(AbstractAPIView):
-
-    def get(self, request, *args, **kwargs):
-        page_num = request.GET.get('page_num') or 1
-        search_term = request.GET.get('search_term')
-        data = FriendsHandler().get_all_users_on_platform(
-            page_num, search_term)
-        return APIResponse(data=data, status=status.HTTP_200_OK)
-
-
-class FriendsView(AbstractAPIView):
-    def get(self, request, *args, **kwargs):
-        page_num = request.GET.get('page_num') or 1
-        search_term = request.GET.get('search_term')
-        user = request.user
-        data = FriendsHandler().get_all_friends_for_user(
-            user, page_num, search_term)
-        return APIResponse(data=data, status=status.HTTP_200_OK)
-
-    def post(self, request, *args, **kwargs):
-        to_profile_id = request.data.get('to_profile_id')
-        user = request.user
-        data = FriendsHandler().send_friend_request(
-            user, to_profile_id)
-        return APIResponse(data=data, status=status.HTTP_200_OK)
-
-
-class PendingFriendRequestView(AbstractAPIView):
-
-    def get(self, request, *args, **kwargs):
-        user = request.user
-        page_num = request.GET.get('page_num') or 1
-        search_term = request.GET.get('search_term')
-        data = FriendsHandler().get_all_pending_friend_requests(
-            user, page_num, search_term)
-        return APIResponse(data=data, status=status.HTTP_200_OK)
-
-
-class FriendRequestActionView(AbstractAPIView):
-    permission_classes = (IsRequestOwner, )
-
-    def post(self, request, *args, **kwargs):
-        user = request.user
-        request_id = kwargs.get("request_id")
-        action = request.data.get("action")
-        data = FriendsHandler().take_action_on_friend_request(user, request_id, action)
         return APIResponse(data=data, status=status.HTTP_200_OK)

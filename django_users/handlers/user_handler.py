@@ -1,10 +1,10 @@
+from rest_framework.exceptions import APIException
+
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from django.contrib.auth.models import User
 
-from base.exceptions import BaseAPIException
-from base.utils import get_full_name
-from users.models import UserProfile
+from django_users.models import UserProfile
 
 
 class UserHandler:
@@ -16,12 +16,12 @@ class UserHandler:
             if user_profile.user.check_password(password):
                 return self.generate_profile_response(user_profile)
             else:
-                raise BaseAPIException(
+                raise APIException(
                     "Incorrect Password",
                     "validation_failed"
                 )
         else:
-            raise BaseAPIException(
+            raise APIException(
                 "User not exists! signup instead.",
                 "user_not_exists"
             )
@@ -31,7 +31,7 @@ class UserHandler:
             user__email=email
         ).exists()
         if user_profile:
-            raise BaseAPIException(
+            raise APIException(
                 "User Already exists! login instead.",
                 "user_already_exists"
             )
@@ -45,7 +45,7 @@ class UserHandler:
             )
         user.set_password(password)
         user.save()
-        name = get_full_name(first_name, last_name)
+        name = self.get_full_name(first_name, last_name)
         user_profile = UserProfile.objects.create(
             name=name,
             user=user,
@@ -70,3 +70,9 @@ class UserHandler:
         refresh = RefreshToken.for_user(user)
         response["refresh"] = (str(refresh),)
         response["access"] = str(refresh.access_token)
+
+    def get_full_name(self, first_name, last_name):
+        if last_name:
+            return first_name + ' ' + last_name
+        else:
+            return first_name

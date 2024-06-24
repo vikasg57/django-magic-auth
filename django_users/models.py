@@ -1,15 +1,10 @@
+import uuid as uuid
 from django.contrib.auth.models import User
 from django.db import models
-from base.models import AbstractBaseModel
-from users.choices import (
-    FOLLOWER_STATUS_CHOICES,
-    FollowerStatusChoices,
-    FRIEND_REQUEST_STATUS_CHOICES,
-    FriendRequestStatusChoices
-)
+from django_users.choices import STATE_CHOICES, StateStatuses
 
 
-class UserProfile(AbstractBaseModel):
+class UserProfile(models.mo):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name='profile')
     mobile = models.CharField(
@@ -20,6 +15,12 @@ class UserProfile(AbstractBaseModel):
     is_mobile_verified = models.BooleanField(default=False)
     is_email_verified = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    created_at = models.DateTimeField(
+        auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    state = models.IntegerField(
+        choices=STATE_CHOICES, default=StateStatuses.ACTIVE, db_index=True)
 
     def __str__(self):
         return self.user.email
@@ -36,39 +37,3 @@ class UserProfile(AbstractBaseModel):
     def last_name(self):
         return self.user.last_name
 
-
-class UserFollower(AbstractBaseModel):
-    profile = models.ForeignKey(
-        UserProfile,
-        on_delete=models.CASCADE,
-        null=False,
-        blank=False,
-        related_name="user_profile",
-    )
-    followed_by = models.ForeignKey(
-        UserProfile,
-        on_delete=models.CASCADE,
-        null=False,
-        blank=False,
-        related_name="followed_by",
-    )
-    followed_date = models.DateTimeField(blank=False, null=False, auto_now_add=True)
-    unfollowed_date = models.DateTimeField(blank=True, null=True)
-    status = models.IntegerField(
-        choices=FOLLOWER_STATUS_CHOICES,
-        default=FollowerStatusChoices.FOLLOWING
-    )
-    is_close_friend = models.BooleanField(default=False)
-
-
-class FriendRequest(AbstractBaseModel):
-    from_user = models.ForeignKey(
-        UserProfile, related_name='sent_requests',
-        on_delete=models.CASCADE)
-    to_user = models.ForeignKey(
-        UserProfile, related_name='received_requests',
-        on_delete=models.CASCADE)
-    status = models.IntegerField(
-        choices=FRIEND_REQUEST_STATUS_CHOICES,
-        default=FriendRequestStatusChoices.PENDING
-    )
