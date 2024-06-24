@@ -24,4 +24,4 @@ Quick start
 
 4. Start the development server and visit the admin to create a maage users.
 
-5. Visit the ``/users/`` URL to participate in the users.
+5. Visit the ``/users/`` URL to participate in the users
