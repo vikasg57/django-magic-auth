@@ -4,7 +4,7 @@ from django.db import models
 from django_users.choices import STATE_CHOICES, StateStatuses
 
 
-class UserProfile(models.mo):
+class UserProfile(models.model):
     user = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name='profile')
     mobile = models.CharField(
