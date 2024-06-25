@@ -5,7 +5,7 @@ import re
 
 from django.utils.html import strip_tags
 from django.core.validators import validate_email
-
+from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from django_users.handlers.user_handler import UserHandler
 

@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: django-magic-auth
-Version: 0.2
+Version: 0.6
 Summary: A Django app to for smooth user onboardings.
 Home-page: https://www.example.com/
 Author: Vikas Vijay Gaikwad
@@ -48,4 +48,4 @@ Quick start
 
 4. Start the development server and visit the admin to create a maage users.
 
-5. Visit the ``/users/`` URL to participate in the users.
+5. Visit the ``/users/`` URL to participate in the users
