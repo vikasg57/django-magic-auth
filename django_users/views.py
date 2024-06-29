@@ -8,6 +8,7 @@ from django.core.validators import validate_email
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from django_users.handlers.user_handler import UserHandler
+from django_users.serializers import UserLoginSerializer, UserCreateSerializer
 
 
 class AbstractAPIView(APIView):
@@ -58,10 +59,13 @@ class AuthLogInView(AbstractAPIView):
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
-        email = self.get_email(request.data.get("email"))
-        password = request.data.get("password")
-        data = UserHandler().get_user(email, password)
-        return APIResponse(data=data, status=status.HTTP_200_OK)
+        serializer = UserLoginSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            password = serializer.validated_data['password']
+            data = UserHandler().get_user(email, password)
+            return APIResponse(data=data, status=status.HTTP_200_OK)
+        return APIResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AuthSignUpView(AbstractAPIView):
@@ -69,11 +73,14 @@ class AuthSignUpView(AbstractAPIView):
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
-        first_name = request.data.get("first_name")
-        last_name = request.data.get("last_name")
-        mobile = request.data.get("mobile")
-        password = request.data.get("password")
-        email = self.get_email(request.data.get("email"))
-        data = UserHandler().crete_user(
-            first_name, last_name, mobile, email, password)
-        return APIResponse(data=data, status=status.HTTP_200_OK)
+        serializer = UserCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            first_name = serializer.validated_data['first_name']
+            last_name = serializer.validated_data['last_name']
+            email = serializer.validated_data['email']
+            password = serializer.validated_data['password']
+            mobile = request.data.get('mobile')
+            data = UserHandler().crete_user(
+                first_name, last_name, mobile, email, password)
+            return APIResponse(data=data, status=status.HTTP_200_OK)
+        return APIResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

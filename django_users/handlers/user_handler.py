@@ -4,12 +4,20 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from django.contrib.auth.models import User
 
-from django_users.models import UserProfile
+from django_users.import_utils import get_cached_user_profile_model
+from django_users.serializers import (
+    UserProfileSerializer,
+    UserCreateSerializer
+)
 
 
 class UserHandler:
+
+    def __init__(self):
+        self.custom_profile = get_cached_user_profile_model()
+
     def get_user(self, email, password):
-        user_profile = UserProfile.objects.filter(
+        user_profile = self.custom_profile.objects.filter(
             user__email=email
         ).first()
         if user_profile:
@@ -27,7 +35,7 @@ class UserHandler:
             )
 
     def crete_user(self, first_name, last_name, mobile, email, password):
-        user_profile = UserProfile.objects.filter(
+        user_profile = self.custom_profile.objects.filter(
             user__email=email
         ).exists()
         if user_profile:
@@ -40,13 +48,19 @@ class UserHandler:
                 email=email
             )
         except Exception as e:
-            user = User.objects.create(
-                first_name=first_name, last_name=last_name, username=email, email=email
-            )
-        user.set_password(password)
-        user.save()
+            user_data = {
+                'first_name': first_name,
+                'last_name': last_name,
+                'email': email,
+                'password': password
+            }
+            user_serializer = UserCreateSerializer(data=user_data)
+            user_serializer.is_valid(raise_exception=True)
+            user = user_serializer.save()
+            user.set_password(password)
+            user.save()
         name = self.get_full_name(first_name, last_name)
-        user_profile = UserProfile.objects.create(
+        user_profile = self.custom_profile.objects.create(
             name=name,
             user=user,
             mobile=mobile,
@@ -55,21 +69,18 @@ class UserHandler:
         return self.generate_profile_response(user_profile, jwt=True)
 
     def generate_profile_response(self, profile, jwt=True):
-        response = {
-            "first_name": profile.user.first_name,
-            "last_name": profile.user.last_name,
-            "mobile": profile.mobile,
-            "email": profile.email,
-            "uuid": str(profile.uuid),
-        }
+        response_data = UserProfileSerializer(profile).data
         if jwt:
-            self.get_tokens_for_user(profile.user, response)
-        return response
+            tokens = self.get_tokens_for_user(profile.user)
+            response_data['tokens'] = tokens
+        return response_data
 
-    def get_tokens_for_user(self, user, response):
+    def get_tokens_for_user(self, user):
         refresh = RefreshToken.for_user(user)
-        response["refresh"] = (str(refresh),)
-        response["access"] = str(refresh.access_token)
+        return {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token)
+        }
 
     def get_full_name(self, first_name, last_name):
         if last_name:

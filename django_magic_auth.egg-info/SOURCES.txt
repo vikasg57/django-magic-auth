@@ -13,9 +13,11 @@ django_users/__init__.py
 django_users/admin.py
 django_users/apps.py
 django_users/choices.py
+django_users/import_utils.py
 django_users/models.py
 django_users/permissions.py
 django_users/response.py
+django_users/serializers.py
 django_users/tests.py
 django_users/urls.py
 django_users/views.py
