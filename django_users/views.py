@@ -55,32 +55,24 @@ class AbstractAPIView(APIView):
 
 
 class AuthLogInView(AbstractAPIView):
-
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
-        serializer = UserLoginSerializer(data=request.data)
-        if serializer.is_valid():
-            email = serializer.validated_data['email']
-            password = serializer.validated_data['password']
-            data = UserHandler().get_user(email, password)
-            return APIResponse(data=data, status=status.HTTP_200_OK)
-        return APIResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        email = self.get_email(request.data.get("email"))
+        password = request.data.get("password")
+        data = UserHandler().get_user(email, password)
+        return APIResponse(data=data, status=status.HTTP_200_OK)
 
 
 class AuthSignUpView(AbstractAPIView):
-
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
-        serializer = UserCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            first_name = serializer.validated_data['first_name']
-            last_name = serializer.validated_data['last_name']
-            email = serializer.validated_data['email']
-            password = serializer.validated_data['password']
-            mobile = request.data.get('mobile')
-            data = UserHandler().crete_user(
-                first_name, last_name, mobile, email, password)
-            return APIResponse(data=data, status=status.HTTP_200_OK)
-        return APIResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        first_name = request.data.get("first_name")
+        last_name = request.data.get("last_name")
+        mobile = request.data.get("mobile")
+        password = request.data.get("password")
+        email = self.get_email(request.data.get("email"))
+        data = UserHandler().crete_user(
+            first_name, last_name, mobile, email, password)
+        return APIResponse(data=data, status=status.HTTP_200_OK)
