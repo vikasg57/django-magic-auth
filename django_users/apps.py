@@ -16,9 +16,9 @@ class UsersConfig(AppConfig):
         if not hasattr(settings, 'CUSTOM_SIGNUP_URL'):
             settings.CUSTOM_SIGNUP_URL = 'signup/'
         if not hasattr(settings, 'CUSTOM_LOGIN_VIEW'):
-            settings.CUSTOM_LOGIN_VIEW = 'django_users.views.login_view'
+            settings.CUSTOM_LOGIN_VIEW = 'django_users.views.AuthLogInView'
         if not hasattr(settings, 'CUSTOM_SIGNUP_VIEW'):
-            settings.CUSTOM_SIGNUP_VIEW = 'django_users.views.signup_view'
+            settings.CUSTOM_SIGNUP_VIEW = 'django_users.views.AuthSignUpView'
         if not hasattr(settings, 'CUSTOM_SIGNUP_RESPONSE'):
             settings.CUSTOM_SIGNUP_RESPONSE = 'django_users.handlers.user_handler.UserHandler.generate_signup_response'
         if not hasattr(settings, 'CUSTOM_LOGIN_RESPONSE'):

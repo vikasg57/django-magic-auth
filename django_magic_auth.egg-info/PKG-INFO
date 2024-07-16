@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: django-magic-auth
-Version: 0.7.9
+Version: 0.8.0
 Summary: A Django app to for smooth user onboardings.
 Home-page: https://www.example.com/
 Author: Vikas Vijay Gaikwad
